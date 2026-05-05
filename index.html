@@ -1,0 +1,56 @@
+<!DOCTYPE html> 
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>AI Demo</title>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest"></script>
+</head>
+
+<body>
+  <h2>Video AI Demo</h2>
+
+  <video id="video" width="600" autoplay loop muted>
+    <source src="video.mp4" type="video/mp4">
+  </video>
+
+  <h3 id="status">Loading model...</h3>
+
+  <script>
+    const URL = "https://teachablemachine.withgoogle.com/models/vR3mFXhaDW/";
+
+    let model;
+
+    const video = document.getElementById("video");
+    const status = document.getElementById("status");
+
+    async function init() {
+      const modelURL = URL + "model.json";
+      const metadataURL = URL + "metadata.json";
+
+      model = await tmImage.load(modelURL, metadataURL);
+
+      status.innerHTML = "Model loaded";
+      loop();
+    }
+
+    async function loop() {
+      const prediction = await model.predict(video);
+
+      let best = prediction[0];
+
+      for (let i = 1; i < prediction.length; i++) {
+        if (prediction[i].probability > best.probability) {
+          best = prediction[i];
+        }
+      }
+
+      status.innerHTML = best.className + " (" + (best.probability*100).toFixed(1) + "%)";
+
+      requestAnimationFrame(loop);
+    }
+
+    init();
+  </script>
+</body>
+</html>
